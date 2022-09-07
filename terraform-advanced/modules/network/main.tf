@@ -1,6 +1,7 @@
 locals {
   id = var.id
 }
+
 resource "aws_vpc" "vpc_resource" {
   cidr_block = var.vpc_cidr
   tags = {
@@ -22,9 +23,39 @@ resource "aws_eip" "eip" {
   }
 }
 
+resource "aws_subnet" "public_subnet" {
+  vpc_id = aws_vpc.vpc_resource.id
+  cidr_block = var.sn_cidr[0]
+  map_public_ip_on_launch = "true"
+  availability_zone = var.availability_zone[0]
+  tags = {
+    Name = var.sn_names[0]
+  }
+}
+
+resource "aws_subnet" "private_subnet1" {
+  vpc_id = aws_vpc.vpc_resource.id
+  cidr_block = var.sn_cidr[1]
+  map_public_ip_on_launch = "false"
+  availability_zone = var.availability_zone[1] 
+  tags = {
+    Name = var.sn_names[1]
+  }
+}
+
+resource "aws_subnet" "private_subnet2" {
+  vpc_id = aws_vpc.vpc_resource.id
+  cidr_block = var.sn_cidr[2]
+  map_public_ip_on_launch = "false"
+  availability_zone = var.availability_zone[2]
+  tags = {
+    Name = var.sn_names[2]
+  }
+}
+
 resource "aws_nat_gateway" "my-nat-gateway" {
   allocation_id = aws_eip.eip.id
-  subnet_id     = var.public_subnet_id
+  subnet_id     = aws_subnet.public_subnet.id
   tags = {
       Name = "${local.id}-nat"
   }
@@ -55,17 +86,22 @@ resource "aws_route_table" "private_route" {
 }
 
 resource "aws_route_table_association" "rt_association_pub" {
-  subnet_id      = var.public_subnet_id
+  subnet_id      = aws_subnet.public_subnet.id
   route_table_id = aws_route_table.public_route.id
 }
 
-resource "aws_route_table_association" "rt_association_pvt" {
-  subnet_id      = var.private_subnet2_id
+resource "aws_route_table_association" "rt_association_pvt1" {
+  subnet_id      = aws_subnet.private_subnet1.id
+  route_table_id = aws_route_table.private_route.id
+}
+
+resource "aws_route_table_association" "rt_association_pvt2" {
+  subnet_id      = aws_subnet.private_subnet2.id
   route_table_id = aws_route_table.private_route.id
 }
 
 resource "aws_db_subnet_group" "sngroup" {
-  subnet_ids = [var.private_subnet1_id,var.private_subnet2_id]
+  subnet_ids = [aws_subnet.private_subnet1.id,aws_subnet.private_subnet2.id]
   tags = {
     Name = "${local.id}-sngroup"
   }

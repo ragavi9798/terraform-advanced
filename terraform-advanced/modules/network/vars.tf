@@ -1,5 +1,5 @@
 variable id {
-    default = "20954"
+    default = "12345"
 }
 
 variable vpc_cidr {
@@ -10,8 +10,14 @@ variable any_cidr {
     default = "0.0.0.0/0"
 }
 
-variable public_subnet_id {} 
+variable sn_cidr {
+    type = list (string)
+}
 
-variable private_subnet1_id {}
+variable availability_zone {
+    type = list (string)
+}
 
-variable private_subnet2_id {}
+variable sn_names {
+    type = list (string)
+}

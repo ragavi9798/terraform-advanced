@@ -1,5 +1,5 @@
 locals {
-  id = "20954"
+  id = "12345"
 }
 
 resource "aws_instance" "instance_pub" {
